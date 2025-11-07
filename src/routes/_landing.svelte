@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiGithub, mdiOpenInNew, mdiLinkedin, mdiTelegram } from "@mdi/js"
+	import { mdiGithub, mdiOpenInNew, mdiLinkedin, mdiMessage } from "@mdi/js"
 	import Icon from "$components/Icon.svelte"
 	import Logo from "$components/Logo.svelte"
 </script>
@@ -17,25 +17,37 @@
 	<hr class="bold" />
 	<ul class="links">
 		<li>
-			<a href="#">
-				title="LinkedIn profile" target="_blank" rel="noopener" >
+			<a
+				href="https://www.linkedin.com/in/sapangajjar101105/"
+				title="LinkedIn profile"
+				target="_blank"
+				rel="noopener"
+			>
 				<Icon title="LinkedIn Icon" path={mdiLinkedin} size="1.5em" />
 				<span>LinkedIn</span>
 				<Icon path={mdiOpenInNew} />
 			</a>
 		</li>
 		<li>
-			<a href="https://github.com/SapanGajjar">
-				title="GitHub profile" target="_blank" rel="noopener" >
+			<a
+				href="https://github.com/SapanGajjar"
+				title="GitHub profile"
+				target="_blank"
+				rel="noopener"
+			>
 				<Icon title="GitHub Icon" path={mdiGithub} size="1.5em" />
 				<span>GitHub</span>
 				<Icon path={mdiOpenInNew} />
 			</a>
 		</li>
 		<li>
-			<a href="#">
-				title="Telegram contact" target="_blank" rel="noopener" >
-				<Icon title="Telegram Icon" path={mdiTelegram} size="1.5em" />
+			<a
+				href="https://t.me/semisapeol"
+				title="Telegram contact"
+				target="_blank"
+				rel="noopener"
+			>
+				<Icon title="Telegram Icon" path={mdiMessage} size="1.5em" />
 				<span>Telegram</span>
 				<Icon path={mdiOpenInNew} />
 			</a>

@@ -1,6 +1,5 @@
 <script lang="ts">
 	// @ts-ignore
-	import portrait from "../../portrait.jpg?w=160&webp&meta"
 	import { rot } from "./cipher"
 	import HiddenText from "./HiddenText.svelte"
 	import { selectable } from "./selectable"
@@ -19,9 +18,9 @@
 	<div class="profile-card">
 		<img
 			class="portrait"
-			src={portrait.src}
+			src="https://avatars.githubusercontent.com/u/95901240?v=4"
 			alt="Sapan's portrait"
-			style="width: {portrait.width}px; height: {portrait.height}px"
+			style="width: 160px; height: 160px"
 		/>
 		<div class="title">
 			<h2>Sapan Gajjar</h2>
@@ -166,24 +165,23 @@
 		<p>Explore the source code for all my projects on GitHub & Github Org.</p>
 		<ul class="list">
 			<li>
-				<strong>Areax:</strong> <a href="#">Link</a> - A Basic PropertyEvaluator
-				App Made by me for SIH2025, written in Flutter - uses OpenStreetMap Api to
-				function.
+				<strong>Areax:</strong> - A Basic PropertyEvaluator App Made by me for SIH2025,
+				written in Flutter - uses OpenStreetMap Api to function.
 			</li>
 			<li>
-				<strong>paid-detector:</strong> <a href="#">Link</a> - My First Freelance
-				Project - Basically there exists a portal that displays diffrent websites
-				in an iframe, and this tool scrapes contents and determines if this.displayed
-				website is relevent to us or not, if no - skip, if yes ring a bell and pause
-				for human verification and data entry.
+				<strong>paid-detector:</strong> - My First Freelance Project - Basically
+				there exists a portal that displays diffrent websites in an iframe, and this
+				tool scrapes contents and determines if this.displayed website is relevent
+				to us or not, if no - skip, if yes ring a bell and pause for human verification
+				and data entry.
 			</li>
 			<li>
-				<strong>Fempeg:</strong> <a href="#">Link</a> - A very Random gui tool I
-				made, Flac to AAC Converter (this is to use offline flac files in Apple Music).
+				<strong>Fempeg:</strong> - A very Random gui tool I made, Flac to AAC Converter
+				(this is to use offline flac files in Apple Music).
 			</li>
 			<li>
-				<strong>techhunt 2025:</strong> <a href="#">Link</a> - Terminal UI themed
-				website I using google gemini in 3 mins. (exactly) for a college event.
+				<strong>techhunt 2025:</strong> - Terminal UI themed website I using google
+				gemini in 3 mins. (exactly) for a college event.
 			</li>
 			<li>
 				<strong>Android Valhalla [deprecated now]:</strong> <a href="#">Link</a>
@@ -191,18 +189,17 @@
 				build, so I made my own with the resources I had available.
 			</li>
 			<li>
-				<strong>BookPiler:</strong> <a href="#">Link</a> - Another one of my Freelance
-				Projects, Basically take PDFs and Merge Sort them using their data with also
-				inline Header/footer designing using pyton. Very Obscure & Out-dated Modules
-				were used.
+				<strong>BookPiler:</strong> - Another one of my Freelance Projects, Basically
+				take PDFs and Merge Sort them using their data with also inline Header/footer
+				designing using pyton. Very Obscure & Out-dated Modules were used.
 			</li>
 			<li>
-				<strong>ID-Gen:</strong> <a href="#">Link</a> - A tool Made to make Duplicate
-				ID Cards for Colleges, EVIL.
+				<strong>ID-Gen:</strong> - A tool Made to make Duplicate ID Cards for Colleges,
+				EVIL.
 			</li>
 			<li>
-				<strong>VideoSauce:</strong> <a href="#">Link</a> - My Attempt on making
-				a No Recommendation & Straight Forward Netflix.
+				<strong>VideoSauce:</strong> - My Attempt on making a No Recommendation &
+				Straight Forward Netflix.
 			</li>
 		</ul>
 
