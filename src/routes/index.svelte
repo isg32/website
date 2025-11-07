@@ -30,12 +30,12 @@
 </script>
 
 <svelte:head>
-	<title>Merilynn Bandy</title>
+	<title>Sapan Gajjar</title>
 </svelte:head>
 
 <Meta
-	title="Merilynn Bandy"
-	description="Merilynn Bandy is a full-stack engineer based in UT, USA."
+	title="Sapan Gajjar"
+	description="Sapan Gajjar is a Developer based in Ahmedabad."
 	image={new URL("/embed.png", BASE_URL).href}
 	isRoot={true}
 />

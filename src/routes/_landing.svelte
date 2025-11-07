@@ -1,33 +1,42 @@
 <script lang="ts">
-	import { mdiGithub, mdiOpenInNew } from "@mdi/js"
+	import { mdiGithub, mdiOpenInNew, mdiLinkedin, mdiTelegram } from "@mdi/js"
 	import Icon from "$components/Icon.svelte"
 	import Logo from "$components/Logo.svelte"
 </script>
 
 <section class="landing">
 	<h1>
-		Hi, I'm <br /> Merilynn Bandy
+		Hi, I'm <br /> Sapan Gajjar
 		<Logo size="0.9em" color="var(--color-primary-400)" />
 	</h1>
+	<p>I'm a Developer based in Ahmedabad.</p>
 	<p>
-		I'm a full-stack engineer based in UT, USA. I care about CSS, typography,
-		accessibility and cute things.
-	</p>
-	<p>
-		In my free time I like to learn more about programming, write stories, and
-		explore new media.
+		I care about low-level systems, full-stack web/mobile development, DevOps,
+		and problem-solving.
 	</p>
 	<hr class="bold" />
 	<ul class="links">
 		<li>
-			<a
-				href="https://github.com/furudean"
-				title="GitHub profile"
-				target="_blank"
-				rel="noopener"
-			>
+			<a href="#">
+				title="LinkedIn profile" target="_blank" rel="noopener" >
+				<Icon title="LinkedIn Icon" path={mdiLinkedin} size="1.5em" />
+				<span>LinkedIn</span>
+				<Icon path={mdiOpenInNew} />
+			</a>
+		</li>
+		<li>
+			<a href="https://github.com/SapanGajjar">
+				title="GitHub profile" target="_blank" rel="noopener" >
 				<Icon title="GitHub Icon" path={mdiGithub} size="1.5em" />
 				<span>GitHub</span>
+				<Icon path={mdiOpenInNew} />
+			</a>
+		</li>
+		<li>
+			<a href="#">
+				title="Telegram contact" target="_blank" rel="noopener" >
+				<Icon title="Telegram Icon" path={mdiTelegram} size="1.5em" />
+				<span>Telegram</span>
 				<Icon path={mdiOpenInNew} />
 			</a>
 		</li>

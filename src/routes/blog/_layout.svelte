@@ -41,12 +41,12 @@
 		<a href="/about" class="author">
 			<img
 				{src}
-				alt="Merilynn's portrait"
+				alt="Sapan's portrait"
 				aria-hidden="true"
 				style="width: {width}px; height: {height}px"
 				class="portrait"
 			/>
-			<span>Merilynn Bandy</span>
+			<span>Sapan Gajjar</span>
 		</a>
 		<span class="separator">·</span>
 		<time datetime={created}>{friendlyDate(created)}</time>
