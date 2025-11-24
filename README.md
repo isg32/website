@@ -1,9 +1,9 @@
-# [website](https://furudean.com/)
+# [website](https://isg32.is-a.dev/)
 
-<img src="static/favicon.svg" 
-  width="128" 
-  height="128" 
-  align="right" 
+<img src="static/favicon.svg"
+  width="128"
+  height="128"
+  align="right"
   alt="Logotype" />
 
 Personal portfolio website. Built with Svelte + Svelte Kit.

@@ -3,7 +3,7 @@ name: Portfolio Site
 created: 2021-02-26T00:00:00
 kind: Website
 summary: Updated portfolio website for 2021. Built with Svelte Kit.
-repo: https://github.com/furudean/website
+repo: https://github.com/isg32/website
 ---
 
 <script context="module">
