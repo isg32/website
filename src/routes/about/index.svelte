@@ -6,7 +6,7 @@
 	import { browser } from "$app/env"
 
 	// sapangajjar101105@gmail.com rot13 encoded
-	const email = rot("fncnatjjanre101105@tznvy.pbz", -13)
+	const email = rot("fncnatnwwne101105@tznvy.pbz", -13)
 </script>
 
 <svelte:head>
