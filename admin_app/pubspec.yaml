@@ -1,0 +1,30 @@
+name: admin_app
+description: Private admin app for isg32.is-a.dev — publishes Work/Blog content directly to Neon Postgres and Cloudinary. Android only.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  google_fonts: ^6.2.1
+  postgres: ^3.5.0
+  http: ^1.2.2
+  cloudinary_sdk: ^4.0.1
+  flutter_markdown_plus: ^1.0.3
+  flutter_secure_storage: ^9.2.2
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

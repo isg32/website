@@ -1,0 +1,13 @@
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+android/local.properties
+android/**/gradle-wrapper.jar
+android/.gradle
+
+# Never commit real credentials passed via --dart-define-from-file
+env.json
+*.env.json

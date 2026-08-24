@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+	--font-serif: 'Newsreader', ui-serif, Georgia, serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+html {
+	background-color: #fafafa;
+	overscroll-behavior: none;
+}
+
+body {
+	background-color: #fafafa;
+	color: #171717;
+	overscroll-behavior: none;
+}
