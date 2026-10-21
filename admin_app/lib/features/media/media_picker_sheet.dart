@@ -4,16 +4,26 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/db/models/media_asset.dart';
 import '../../core/providers.dart';
+import 'asset_thumbnail.dart';
 
 /// Opens the Media Canvas as a bottom sheet. Tapping an asset (or uploading
-/// a new one) returns the `![](secure_url)` Markdown snippet to insert at
-/// the editor's cursor, or null if the user backed out.
+/// a new one) returns a Markdown snippet to insert at the editor's cursor —
+/// `![](secure_url)` for an image, or a raw `<video>` tag for a video (see
+/// src/lib/server/markdown.ts on the web side for why raw HTML is needed:
+/// Markdown has no native video syntax) — or null if the user backed out.
 Future<String?> showMediaPickerSheet(BuildContext context, WidgetRef ref) {
   return showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => _MediaPickerSheet(onSelect: (asset) => '![](${asset.secureUrl})'),
+    builder: (context) =>
+        _MediaPickerSheet(onSelect: (asset) => _snippetFor(asset)),
   );
+}
+
+String _snippetFor(MediaAsset asset) {
+  return asset.resourceType == 'video'
+      ? '\n<video src="${asset.secureUrl}" controls></video>\n'
+      : '![](${asset.secureUrl})';
 }
 
 /// Same picker, but returns the selected/uploaded MediaAsset itself — used
@@ -32,26 +42,32 @@ class _MediaPickerSheet<T> extends ConsumerStatefulWidget {
   final T Function(MediaAsset asset) onSelect;
 
   @override
-  ConsumerState<_MediaPickerSheet<T>> createState() => _MediaPickerSheetState<T>();
+  ConsumerState<_MediaPickerSheet<T>> createState() =>
+      _MediaPickerSheetState<T>();
 }
 
 class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
   String _search = '';
   bool _uploading = false;
 
-  Future<void> _upload() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _upload({required bool video}) async {
+    final picker = ImagePicker();
+    final picked = video
+        ? await picker.pickVideo(source: ImageSource.gallery)
+        : await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
 
     setState(() => _uploading = true);
     try {
-      final uploaded = await ref.read(cloudinaryServiceProvider).uploadImage(picked.path);
-      final assetId = await ref
-          .read(repositoryProvider)
-          .insertMediaAsset(
+      final cloudinary = ref.read(cloudinaryServiceProvider);
+      final uploaded = video
+          ? await cloudinary.uploadVideo(picked.path)
+          : await cloudinary.uploadImage(picked.path);
+      final assetId = await ref.read(repositoryProvider).insertMediaAsset(
             cloudinaryPublicId: uploaded.publicId,
             secureUrl: uploaded.secureUrl,
             format: uploaded.format,
+            resourceType: uploaded.resourceType,
             bytes: uploaded.bytes,
             width: uploaded.width,
             height: uploaded.height,
@@ -63,7 +79,7 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
         cloudinaryPublicId: uploaded.publicId,
         secureUrl: uploaded.secureUrl,
         format: uploaded.format,
-        resourceType: 'image',
+        resourceType: uploaded.resourceType,
         bytes: uploaded.bytes,
         width: uploaded.width,
         height: uploaded.height,
@@ -73,7 +89,8 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
       if (mounted) Navigator.of(context).pop(widget.onSelect(asset));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Upload failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -98,18 +115,28 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Media Canvas', style: Theme.of(context).textTheme.titleLarge),
+                    child: Text('Media Canvas',
+                        style: Theme.of(context).textTheme.titleLarge),
                   ),
-                  IconButton(
-                    icon: _uploading
-                        ? const SizedBox(
+                  _uploading
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.upload),
-                    onPressed: _uploading ? null : _upload,
-                  ),
+                          ),
+                        )
+                      : PopupMenuButton<bool>(
+                          icon: const Icon(Icons.upload),
+                          onSelected: (video) => _upload(video: video),
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                                value: false, child: Text('Upload photo')),
+                            PopupMenuItem(
+                                value: true, child: Text('Upload video')),
+                          ],
+                        ),
                 ],
               ),
               TextField(
@@ -118,7 +145,8 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
                   prefixIcon: Icon(Icons.search),
                   isDense: true,
                 ),
-                onChanged: (value) => setState(() => _search = value.toLowerCase()),
+                onChanged: (value) =>
+                    setState(() => _search = value.toLowerCase()),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -127,16 +155,19 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
                     final filtered = _search.isEmpty
                         ? assets
                         : assets
-                              .where(
-                                (a) => (a.originalFilename ?? '').toLowerCase().contains(_search),
-                              )
-                              .toList();
+                            .where(
+                              (a) => (a.originalFilename ?? '')
+                                  .toLowerCase()
+                                  .contains(_search),
+                            )
+                            .toList();
                     if (filtered.isEmpty) {
                       return const Center(child: Text('No assets found.'));
                     }
                     return GridView.builder(
                       controller: scrollController,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
@@ -146,13 +177,16 @@ class _MediaPickerSheetState<T> extends ConsumerState<_MediaPickerSheet<T>> {
                         final asset = filtered[index];
                         return _AssetTile(
                           asset: asset,
-                          onTap: () => Navigator.of(context).pop(widget.onSelect(asset)),
+                          onTap: () =>
+                              Navigator.of(context).pop(widget.onSelect(asset)),
                         );
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, stackTrace) => Center(child: Text('Failed to load: $error')),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) =>
+                      Center(child: Text('Failed to load: $error')),
                 ),
               ),
             ],
@@ -171,9 +205,6 @@ class _AssetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Ink.image(image: NetworkImage(asset.secureUrl), fit: BoxFit.cover),
-    );
+    return InkWell(onTap: onTap, child: AssetThumbnail(asset: asset));
   }
 }

@@ -46,3 +46,29 @@ class BlogPost {
     );
   }
 }
+
+class BlogGalleryImage {
+  final int id;
+  final int blogPostId;
+  final int mediaAssetId;
+  final int sortOrder;
+  final String? caption;
+
+  const BlogGalleryImage({
+    required this.id,
+    required this.blogPostId,
+    required this.mediaAssetId,
+    required this.sortOrder,
+    required this.caption,
+  });
+
+  factory BlogGalleryImage.fromRow(Map<String, dynamic> row) {
+    return BlogGalleryImage(
+      id: row['id'] as int,
+      blogPostId: row['blog_post_id'] as int,
+      mediaAssetId: row['media_asset_id'] as int,
+      sortOrder: row['sort_order'] as int,
+      caption: row['caption'] as String?,
+    );
+  }
+}

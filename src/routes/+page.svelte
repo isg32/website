@@ -22,7 +22,12 @@
 			<a href={linkedinUrl} class="hover:text-neutral-900">Linkedin</a>
 		</p>
 		<h1 class="font-serif text-4xl leading-tight sm:text-5xl">Hi, I'm<br />Sapan Gajjar</h1>
-		<p class="mt-6 max-w-md text-neutral-600">
+		<img
+			src="/assets/goth_1784217424383.png"
+			alt=""
+			class="mx-auto mt-8 h-20 w-20 object-cover grayscale"
+		/>
+		<p class="mt-6 max-w-md px-3 text-neutral-600">
 			I'm a Developer based in Ahmedabad. I care about low-level systems, full-stack web/mobile
 			development, DevOps and problem-solving.
 		</p>

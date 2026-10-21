@@ -1,6 +1,6 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { db } from '../client';
-import { blogPosts, mediaAssets } from '../schema';
+import { blogGalleryImages, blogPosts, mediaAssets } from '../schema';
 
 export async function getPublishedPosts() {
 	return db
@@ -19,7 +19,16 @@ export async function getPublishedPostBySlug(slug: string) {
 		.where(and(eq(blogPosts.slug, slug), eq(blogPosts.status, 'published')))
 		.limit(1);
 
-	return result ?? null;
+	if (!result) return null;
+
+	const gallery = await db
+		.select({ image: blogGalleryImages, asset: mediaAssets })
+		.from(blogGalleryImages)
+		.innerJoin(mediaAssets, eq(blogGalleryImages.mediaAssetId, mediaAssets.id))
+		.where(eq(blogGalleryImages.blogPostId, result.post.id))
+		.orderBy(asc(blogGalleryImages.sortOrder));
+
+	return { ...result, gallery };
 }
 
 export async function getLatestPublishedPost() {

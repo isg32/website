@@ -4,15 +4,18 @@ import 'markdown_preview_pane.dart';
 
 /// Toolbar + textarea for writing Markdown. Buttons insert/wrap Markdown
 /// syntax at the current selection — there is no "U" (underline) button,
-/// since underline isn't standard Markdown; adding raw-HTML passthrough for
-/// one rarely-needed style isn't worth the sanitizer complexity on the
-/// public site's renderer.
+/// since underline isn't standard Markdown and isn't worth the sanitizer
+/// complexity for one rarely-needed style. Video is the one exception that
+/// does use raw-HTML passthrough (`<video>`, via "Insert video"), because
+/// Markdown has no native video syntax at all — see the sanitizer allowlist
+/// in src/lib/server/markdown.ts on the web side.
 class MarkdownEditor extends StatelessWidget {
   const MarkdownEditor({
     super.key,
     required this.controller,
     this.focusNode,
     this.onInsertImage,
+    this.onInsertVideo,
     this.minLines = 12,
   });
 
@@ -23,6 +26,11 @@ class MarkdownEditor extends StatelessWidget {
   /// null if the user cancelled. Wired by the parent screen to open the
   /// media picker sheet.
   final Future<String?> Function()? onInsertImage;
+
+  /// Same shape as [onInsertImage], but for video — returns a raw `<video>`
+  /// tag snippet (Markdown has no native video syntax; see
+  /// src/lib/server/markdown.ts for the sanitizer allowlist that permits it).
+  final Future<String?> Function()? onInsertVideo;
 
   final int minLines;
 
@@ -36,7 +44,8 @@ class MarkdownEditor extends StatelessWidget {
     final newText = text.replaceRange(start, end, '$before$replacement$after');
     controller.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(offset: start + before.length + replacement.length),
+      selection: TextSelection.collapsed(
+          offset: start + before.length + replacement.length),
     );
   }
 
@@ -99,12 +108,14 @@ class MarkdownEditor extends StatelessWidget {
             IconButton(
               tooltip: 'Bold',
               icon: const Icon(Icons.format_bold),
-              onPressed: () => _wrapSelection('**', '**', placeholder: 'bold text'),
+              onPressed: () =>
+                  _wrapSelection('**', '**', placeholder: 'bold text'),
             ),
             IconButton(
               tooltip: 'Italic',
               icon: const Icon(Icons.format_italic),
-              onPressed: () => _wrapSelection('_', '_', placeholder: 'italic text'),
+              onPressed: () =>
+                  _wrapSelection('_', '_', placeholder: 'italic text'),
             ),
             IconButton(
               tooltip: 'Heading 1',
@@ -140,6 +151,15 @@ class MarkdownEditor extends StatelessWidget {
                   if (snippet != null) _insertAtCursor(snippet);
                 },
               ),
+            if (onInsertVideo != null)
+              IconButton(
+                tooltip: 'Insert video',
+                icon: const Icon(Icons.videocam_outlined),
+                onPressed: () async {
+                  final snippet = await onInsertVideo!();
+                  if (snippet != null) _insertAtCursor(snippet);
+                },
+              ),
           ],
         ),
         const Divider(height: 1),
@@ -163,10 +183,16 @@ class MarkdownEditor extends StatelessWidget {
 /// Write/Preview tabs wired to the same controller and renderer used
 /// elsewhere in this app.
 class MarkdownComposer extends StatefulWidget {
-  const MarkdownComposer({super.key, required this.controller, this.onInsertImage});
+  const MarkdownComposer({
+    super.key,
+    required this.controller,
+    this.onInsertImage,
+    this.onInsertVideo,
+  });
 
   final TextEditingController controller;
   final Future<String?> Function()? onInsertImage;
+  final Future<String?> Function()? onInsertVideo;
 
   @override
   State<MarkdownComposer> createState() => _MarkdownComposerState();
@@ -174,7 +200,8 @@ class MarkdownComposer extends StatefulWidget {
 
 class _MarkdownComposerState extends State<MarkdownComposer>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 2, vsync: this);
+  late final TabController _tabController =
+      TabController(length: 2, vsync: this);
 
   @override
   void dispose() {
@@ -197,7 +224,11 @@ class _MarkdownComposerState extends State<MarkdownComposer>
           child: TabBarView(
             controller: _tabController,
             children: [
-              MarkdownEditor(controller: widget.controller, onInsertImage: widget.onInsertImage),
+              MarkdownEditor(
+                controller: widget.controller,
+                onInsertImage: widget.onInsertImage,
+                onInsertVideo: widget.onInsertVideo,
+              ),
               MarkdownPreviewPane(controller: widget.controller),
             ],
           ),

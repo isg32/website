@@ -7,6 +7,7 @@ import '../../core/db/models/media_asset.dart';
 import '../../core/providers.dart';
 import '../../core/utils/slugify.dart';
 import '../editor/markdown_editor.dart';
+import '../media/gallery_grid.dart';
 import '../media/media_picker_sheet.dart';
 
 class BlogEditScreen extends ConsumerStatefulWidget {
@@ -20,11 +21,16 @@ class BlogEditScreen extends ConsumerStatefulWidget {
 }
 
 class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
-  late final _titleController = TextEditingController(text: widget.post?.title ?? '');
-  late final _slugController = TextEditingController(text: widget.post?.slug ?? '');
-  late final _excerptController = TextEditingController(text: widget.post?.excerpt ?? '');
-  late final _quoteController = TextEditingController(text: widget.post?.quoteText ?? '');
-  late final _contentController = TextEditingController(text: widget.post?.contentMarkdown ?? '');
+  late final _titleController =
+      TextEditingController(text: widget.post?.title ?? '');
+  late final _slugController =
+      TextEditingController(text: widget.post?.slug ?? '');
+  late final _excerptController =
+      TextEditingController(text: widget.post?.excerpt ?? '');
+  late final _quoteController =
+      TextEditingController(text: widget.post?.quoteText ?? '');
+  late final _contentController =
+      TextEditingController(text: widget.post?.contentMarkdown ?? '');
 
   late BlogPostType _postType = widget.post?.postType ?? BlogPostType.article;
   bool _slugEdited = false;
@@ -73,17 +79,22 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
     if (_slugController.text.trim().isEmpty) _maybeAutoSlug();
 
     if (_savedPostId == null) {
-      _savedPostId = await repo.createBlogPost(postType: _postType, slug: _slugController.text.trim());
+      _savedPostId = await repo.createBlogPost(
+          postType: _postType, slug: _slugController.text.trim());
     }
     await repo.updateBlogPost(
       id: _savedPostId!,
       postType: _postType,
       slug: _slugController.text.trim(),
-      title: _postType == BlogPostType.article && _titleController.text.trim().isNotEmpty
+      title: _postType == BlogPostType.article &&
+              _titleController.text.trim().isNotEmpty
           ? _titleController.text.trim()
           : null,
-      excerpt: _excerptController.text.trim().isEmpty ? null : _excerptController.text.trim(),
-      quoteText: _postType == BlogPostType.quote && _quoteController.text.trim().isNotEmpty
+      excerpt: _excerptController.text.trim().isEmpty
+          ? null
+          : _excerptController.text.trim(),
+      quoteText: _postType == BlogPostType.quote &&
+              _quoteController.text.trim().isNotEmpty
           ? _quoteController.text.trim()
           : null,
       thumbnailAssetId: _thumbnail?.id ?? widget.post?.thumbnailAssetId,
@@ -93,16 +104,19 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
   }
 
   Future<void> _save({ContentStatus? setStatus}) async {
-    if (_postType == BlogPostType.article && _titleController.text.trim().isEmpty) {
+    if (_postType == BlogPostType.article &&
+        _titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Articles need a title.')));
       return;
     }
-    if (_postType == BlogPostType.quote && _quoteController.text.trim().isEmpty) {
+    if (_postType == BlogPostType.quote &&
+        _quoteController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Quote posts need quote text.')));
+      ).showSnackBar(
+          const SnackBar(content: Text('Quote posts need quote text.')));
       return;
     }
     setState(() => _saving = true);
@@ -115,7 +129,8 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Save failed: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Save failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -124,16 +139,24 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final galleryAsync = _savedPostId == null
+        ? null
+        : ref.watch(blogGalleryProvider(_savedPostId!));
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.post == null ? 'New Post' : 'Edit Post'),
         actions: [
           TextButton(
-            onPressed: _saving ? null : () => _save(setStatus: ContentStatus.draft),
-            child: const Text('Save Draft', style: TextStyle(color: Colors.black)),
+            onPressed:
+                _saving ? null : () => _save(setStatus: ContentStatus.draft),
+            child:
+                const Text('Save Draft', style: TextStyle(color: Colors.black)),
           ),
           FilledButton(
-            onPressed: _saving ? null : () => _save(setStatus: ContentStatus.published),
+            onPressed: _saving
+                ? null
+                : () => _save(setStatus: ContentStatus.published),
             style: FilledButton.styleFrom(backgroundColor: Colors.black),
             child: const Text('Publish'),
           ),
@@ -145,7 +168,8 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
         children: [
           SegmentedButton<BlogPostType>(
             segments: const [
-              ButtonSegment(value: BlogPostType.article, label: Text('Article')),
+              ButtonSegment(
+                  value: BlogPostType.article, label: Text('Article')),
               ButtonSegment(value: BlogPostType.quote, label: Text('Quote')),
             ],
             selected: {_postType},
@@ -161,7 +185,8 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: _excerptController,
-              decoration: const InputDecoration(labelText: 'Excerpt (archive card summary)'),
+              decoration: const InputDecoration(
+                  labelText: 'Excerpt (archive card summary)'),
               maxLines: 2,
             ),
             const SizedBox(height: 12),
@@ -210,11 +235,48 @@ class _BlogEditScreenState extends ConsumerState<BlogEditScreen> {
           MarkdownComposer(
             controller: _contentController,
             onInsertImage: () => showMediaPickerSheet(context, ref),
+            onInsertVideo: () => showMediaPickerSheet(context, ref),
           ),
+          if (_postType == BlogPostType.article) ...[
+            const SizedBox(height: 24),
+            Text('Gallery', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            if (_savedPostId == null)
+              const Text(
+                'Save the post first to attach gallery images.',
+                style: TextStyle(color: Colors.grey),
+              )
+            else
+              galleryAsync!.when(
+                data: (items) => GalleryGrid(
+                  items: items,
+                  onAdd: () async {
+                    final asset = await showAssetPickerSheet(context, ref);
+                    if (asset != null) {
+                      await ref.read(repositoryProvider).addBlogGalleryImage(
+                            _savedPostId!,
+                            asset.id,
+                          );
+                      ref.invalidate(blogGalleryProvider(_savedPostId!));
+                    }
+                  },
+                  onRemove: (galleryImageId) async {
+                    await ref
+                        .read(repositoryProvider)
+                        .removeBlogGalleryImage(galleryImageId);
+                    ref.invalidate(blogGalleryProvider(_savedPostId!));
+                  },
+                ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stackTrace) =>
+                    Text('Failed to load gallery: $error'),
+              ),
+          ],
           const SizedBox(height: 32),
           if (widget.post != null)
             OutlinedButton(
-              onPressed: _saving ? null : () => _save(setStatus: ContentStatus.hidden),
+              onPressed:
+                  _saving ? null : () => _save(setStatus: ContentStatus.hidden),
               child: const Text('Hide'),
             ),
         ],

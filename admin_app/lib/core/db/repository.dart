@@ -11,7 +11,8 @@ class Repository {
 
   // ---- Work categories ----------------------------------------------
 
-  Future<int> createWorkCategory({required String name, required String slug}) async {
+  Future<int> createWorkCategory(
+      {required String name, required String slug}) async {
     final rows = await _db.execute(
       'INSERT INTO work_categories (name, slug) VALUES (@name, @slug) RETURNING id',
       {'name': name, 'slug': slug},
@@ -19,7 +20,8 @@ class Repository {
     return rows.first['id'] as int;
   }
 
-  Future<void> renameWorkCategory(int id, {required String name, required String slug}) async {
+  Future<void> renameWorkCategory(int id,
+      {required String name, required String slug}) async {
     await _db.execute(
       'UPDATE work_categories SET name = @name, slug = @slug WHERE id = @id',
       {'id': id, 'name': name, 'slug': slug},
@@ -38,6 +40,7 @@ class Repository {
     required String cloudinaryPublicId,
     required String secureUrl,
     String? format,
+    String resourceType = 'image',
     int? bytes,
     int? width,
     int? height,
@@ -46,15 +49,16 @@ class Repository {
     final rows = await _db.execute(
       '''
       INSERT INTO media_assets
-        (cloudinary_public_id, secure_url, format, bytes, width, height, original_filename)
+        (cloudinary_public_id, secure_url, format, resource_type, bytes, width, height, original_filename)
       VALUES
-        (@publicId, @secureUrl, @format, @bytes, @width, @height, @originalFilename)
+        (@publicId, @secureUrl, @format, @resourceType, @bytes, @width, @height, @originalFilename)
       RETURNING id
       ''',
       {
         'publicId': cloudinaryPublicId,
         'secureUrl': secureUrl,
         'format': format,
+        'resourceType': resourceType,
         'bytes': bytes,
         'width': width,
         'height': height,
@@ -64,7 +68,8 @@ class Repository {
     return rows.first['id'] as int;
   }
 
-  Future<int> createMediaCollection({required String name, required String slug}) async {
+  Future<int> createMediaCollection(
+      {required String name, required String slug}) async {
     final rows = await _db.execute(
       'INSERT INTO media_collections (name, slug) VALUES (@name, @slug) RETURNING id',
       {'name': name, 'slug': slug},
@@ -168,18 +173,24 @@ class Repository {
     await _setContentStatus(table: 'work_projects', id: id, status: status);
   }
 
-  Future<void> addWorkGalleryImage(int workProjectId, int mediaAssetId, {int sortOrder = 0}) async {
+  Future<void> addWorkGalleryImage(int workProjectId, int mediaAssetId,
+      {int sortOrder = 0}) async {
     await _db.execute(
       '''
       INSERT INTO work_gallery_images (work_project_id, media_asset_id, sort_order)
       VALUES (@workProjectId, @mediaAssetId, @sortOrder)
       ''',
-      {'workProjectId': workProjectId, 'mediaAssetId': mediaAssetId, 'sortOrder': sortOrder},
+      {
+        'workProjectId': workProjectId,
+        'mediaAssetId': mediaAssetId,
+        'sortOrder': sortOrder
+      },
     );
   }
 
   Future<void> removeWorkGalleryImage(int id) async {
-    await _db.execute('DELETE FROM work_gallery_images WHERE id = @id', {'id': id});
+    await _db
+        .execute('DELETE FROM work_gallery_images WHERE id = @id', {'id': id});
   }
 
   // ---- Blog posts ----------------------------------------------------
@@ -256,6 +267,26 @@ class Repository {
 
   Future<void> setBlogPostStatus(int id, ContentStatus status) async {
     await _setContentStatus(table: 'blog_posts', id: id, status: status);
+  }
+
+  Future<void> addBlogGalleryImage(int blogPostId, int mediaAssetId,
+      {int sortOrder = 0}) async {
+    await _db.execute(
+      '''
+      INSERT INTO blog_gallery_images (blog_post_id, media_asset_id, sort_order)
+      VALUES (@blogPostId, @mediaAssetId, @sortOrder)
+      ''',
+      {
+        'blogPostId': blogPostId,
+        'mediaAssetId': mediaAssetId,
+        'sortOrder': sortOrder
+      },
+    );
+  }
+
+  Future<void> removeBlogGalleryImage(int id) async {
+    await _db
+        .execute('DELETE FROM blog_gallery_images WHERE id = @id', {'id': id});
   }
 
   // ---- shared status transition -----------------------------------------

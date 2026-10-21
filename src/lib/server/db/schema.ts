@@ -117,3 +117,15 @@ export const blogPosts = pgTable(
 		index('blog_posts_published_at_idx').on(t.publishedAt)
 	]
 );
+
+export const blogGalleryImages = pgTable('blog_gallery_images', {
+	id: serial('id').primaryKey(),
+	blogPostId: integer('blog_post_id')
+		.notNull()
+		.references(() => blogPosts.id, { onDelete: 'cascade' }),
+	mediaAssetId: integer('media_asset_id')
+		.notNull()
+		.references(() => mediaAssets.id, { onDelete: 'cascade' }),
+	sortOrder: integer('sort_order').notNull().default(0),
+	caption: text('caption')
+});

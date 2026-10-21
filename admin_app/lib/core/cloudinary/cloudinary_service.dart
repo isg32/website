@@ -4,6 +4,7 @@ class UploadedAsset {
   final String publicId;
   final String secureUrl;
   final String? format;
+  final String resourceType;
   final int? bytes;
   final int? width;
   final int? height;
@@ -12,6 +13,7 @@ class UploadedAsset {
     required this.publicId,
     required this.secureUrl,
     required this.format,
+    required this.resourceType,
     required this.bytes,
     required this.width,
     required this.height,
@@ -33,16 +35,26 @@ class CloudinaryService {
     cloudName: _cloudName,
   );
 
-  Future<UploadedAsset> uploadImage(String filePath, {String? folder}) async {
+  Future<UploadedAsset> uploadImage(String filePath, {String? folder}) =>
+      _upload(filePath, CloudinaryResourceType.image, 'image', folder: folder);
+
+  Future<UploadedAsset> uploadVideo(String filePath, {String? folder}) =>
+      _upload(filePath, CloudinaryResourceType.video, 'video', folder: folder);
+
+  Future<UploadedAsset> _upload(
+    String filePath,
+    CloudinaryResourceType resourceType,
+    String resourceTypeLabel, {
+    String? folder,
+  }) async {
     final response = await _cloudinary.uploadResource(
       CloudinaryUploadResource(
-        filePath: filePath,
-        resourceType: CloudinaryResourceType.image,
-        folder: folder,
-      ),
+          filePath: filePath, resourceType: resourceType, folder: folder),
     );
 
-    if (!response.isSuccessful || response.secureUrl == null || response.publicId == null) {
+    if (!response.isSuccessful ||
+        response.secureUrl == null ||
+        response.publicId == null) {
       throw Exception('Cloudinary upload failed: ${response.error}');
     }
 
@@ -50,6 +62,7 @@ class CloudinaryService {
       publicId: response.publicId!,
       secureUrl: response.secureUrl!,
       format: response.format,
+      resourceType: resourceTypeLabel,
       bytes: response.bytes,
       width: response.width,
       height: response.height,

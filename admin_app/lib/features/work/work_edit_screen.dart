@@ -7,6 +7,7 @@ import '../../core/db/models/work_project.dart';
 import '../../core/providers.dart';
 import '../../core/utils/slugify.dart';
 import '../editor/markdown_editor.dart';
+import '../media/gallery_grid.dart';
 import '../media/media_picker_sheet.dart';
 
 class WorkEditScreen extends ConsumerStatefulWidget {
@@ -20,12 +21,18 @@ class WorkEditScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
-  late final _titleController = TextEditingController(text: widget.project?.title ?? '');
-  late final _slugController = TextEditingController(text: widget.project?.slug ?? '');
-  late final _subtitleController = TextEditingController(text: widget.project?.subtitle ?? '');
-  late final _summaryController = TextEditingController(text: widget.project?.summary ?? '');
-  late final _repoUrlController = TextEditingController(text: widget.project?.repoUrl ?? '');
-  late final _liveUrlController = TextEditingController(text: widget.project?.liveUrl ?? '');
+  late final _titleController =
+      TextEditingController(text: widget.project?.title ?? '');
+  late final _slugController =
+      TextEditingController(text: widget.project?.slug ?? '');
+  late final _subtitleController =
+      TextEditingController(text: widget.project?.subtitle ?? '');
+  late final _summaryController =
+      TextEditingController(text: widget.project?.summary ?? '');
+  late final _repoUrlController =
+      TextEditingController(text: widget.project?.repoUrl ?? '');
+  late final _liveUrlController =
+      TextEditingController(text: widget.project?.liveUrl ?? '');
   late final _contentController = TextEditingController(
     text: widget.project?.contentMarkdown ?? '',
   );
@@ -86,22 +93,33 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
       title: _titleController.text.trim(),
       slug: _slugController.text.trim(),
       categoryId: _categoryId,
-      subtitle: _subtitleController.text.trim().isEmpty ? null : _subtitleController.text.trim(),
-      summary: _summaryController.text.trim().isEmpty ? null : _summaryController.text.trim(),
+      subtitle: _subtitleController.text.trim().isEmpty
+          ? null
+          : _subtitleController.text.trim(),
+      summary: _summaryController.text.trim().isEmpty
+          ? null
+          : _summaryController.text.trim(),
       thumbnailAssetId: _thumbnail?.id ?? widget.project?.thumbnailAssetId,
-      exampleScreenshotAssetId: _screenshot?.id ?? widget.project?.exampleScreenshotAssetId,
-      repoUrl: _repoUrlController.text.trim().isEmpty ? null : _repoUrlController.text.trim(),
-      liveUrl: _liveUrlController.text.trim().isEmpty ? null : _liveUrlController.text.trim(),
+      exampleScreenshotAssetId:
+          _screenshot?.id ?? widget.project?.exampleScreenshotAssetId,
+      repoUrl: _repoUrlController.text.trim().isEmpty
+          ? null
+          : _repoUrlController.text.trim(),
+      liveUrl: _liveUrlController.text.trim().isEmpty
+          ? null
+          : _liveUrlController.text.trim(),
       contentMarkdown: _contentController.text,
     );
     return _savedProjectId!;
   }
 
   Future<void> _save({ContentStatus? setStatus}) async {
-    if (_titleController.text.trim().isEmpty || _slugController.text.trim().isEmpty) {
+    if (_titleController.text.trim().isEmpty ||
+        _slugController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Title and slug are required.')));
+      ).showSnackBar(
+          const SnackBar(content: Text('Title and slug are required.')));
       return;
     }
     setState(() => _saving = true);
@@ -113,12 +131,16 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
       invalidateContentProviders(ref);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(setStatus == ContentStatus.published ? 'Published.' : 'Saved.')),
+          SnackBar(
+              content: Text(setStatus == ContentStatus.published
+                  ? 'Published.'
+                  : 'Saved.')),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Save failed: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Save failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -137,11 +159,15 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
         title: Text(widget.project == null ? 'New Project' : 'Edit Project'),
         actions: [
           TextButton(
-            onPressed: _saving ? null : () => _save(setStatus: ContentStatus.draft),
-            child: const Text('Save Draft', style: TextStyle(color: Colors.black)),
+            onPressed:
+                _saving ? null : () => _save(setStatus: ContentStatus.draft),
+            child:
+                const Text('Save Draft', style: TextStyle(color: Colors.black)),
           ),
           FilledButton(
-            onPressed: _saving ? null : () => _save(setStatus: ContentStatus.published),
+            onPressed: _saving
+                ? null
+                : () => _save(setStatus: ContentStatus.published),
             style: FilledButton.styleFrom(backgroundColor: Colors.black),
             child: const Text('Publish'),
           ),
@@ -167,13 +193,16 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
               value: _categoryId,
               decoration: const InputDecoration(labelText: 'Category'),
               items: [
-                const DropdownMenuItem(value: null, child: Text('Uncategorized')),
-                ...categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))),
+                const DropdownMenuItem(
+                    value: null, child: Text('Uncategorized')),
+                ...categories.map(
+                    (c) => DropdownMenuItem(value: c.id, child: Text(c.name))),
               ],
               onChanged: (value) => setState(() => _categoryId = value),
             ),
             loading: () => const LinearProgressIndicator(),
-            error: (error, stackTrace) => Text('Failed to load categories: $error'),
+            error: (error, stackTrace) =>
+                Text('Failed to load categories: $error'),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -183,7 +212,8 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _summaryController,
-            decoration: const InputDecoration(labelText: 'Summary (listing card description)'),
+            decoration: const InputDecoration(
+                labelText: 'Summary (listing card description)'),
             maxLines: 2,
           ),
           const SizedBox(height: 12),
@@ -222,6 +252,7 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
           MarkdownComposer(
             controller: _contentController,
             onInsertImage: () => showMediaPickerSheet(context, ref),
+            onInsertVideo: () => showMediaPickerSheet(context, ref),
           ),
           const SizedBox(height: 24),
           Text('Gallery', style: Theme.of(context).textTheme.titleLarge),
@@ -233,70 +264,34 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
             )
           else
             galleryAsync!.when(
-              data: (items) => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final item in items)
-                    Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            item.asset.secureUrl,
-                            width: 90,
-                            height: 90,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.close, size: 16, color: Colors.white),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.black54,
-                              minimumSize: const Size(24, 24),
-                            ),
-                            onPressed: () async {
-                              await ref
-                                  .read(repositoryProvider)
-                                  .removeWorkGalleryImage(item.galleryImageId);
-                              ref.invalidate(workGalleryProvider(_savedProjectId!));
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  InkWell(
-                    onTap: () async {
-                      final asset = await showAssetPickerSheet(context, ref);
-                      if (asset != null) {
-                        await ref
-                            .read(repositoryProvider)
-                            .addWorkGalleryImage(_savedProjectId!, asset.id);
-                        ref.invalidate(workGalleryProvider(_savedProjectId!));
-                      }
-                    },
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Icon(Icons.add),
-                    ),
-                  ),
-                ],
+              data: (items) => GalleryGrid(
+                items: items,
+                onAdd: () async {
+                  final asset = await showAssetPickerSheet(context, ref);
+                  if (asset != null) {
+                    await ref.read(repositoryProvider).addWorkGalleryImage(
+                          _savedProjectId!,
+                          asset.id,
+                        );
+                    ref.invalidate(workGalleryProvider(_savedProjectId!));
+                  }
+                },
+                onRemove: (galleryImageId) async {
+                  await ref
+                      .read(repositoryProvider)
+                      .removeWorkGalleryImage(galleryImageId);
+                  ref.invalidate(workGalleryProvider(_savedProjectId!));
+                },
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Text('Failed to load gallery: $error'),
+              error: (error, stackTrace) =>
+                  Text('Failed to load gallery: $error'),
             ),
           const SizedBox(height: 32),
           if (widget.project != null) ...[
             OutlinedButton(
-              onPressed: _saving ? null : () => _save(setStatus: ContentStatus.hidden),
+              onPressed:
+                  _saving ? null : () => _save(setStatus: ContentStatus.hidden),
               child: const Text('Hide'),
             ),
           ],
@@ -307,7 +302,8 @@ class _WorkEditScreenState extends ConsumerState<WorkEditScreen> {
 }
 
 class _AssetPickerField extends StatelessWidget {
-  const _AssetPickerField({required this.label, required this.assetUrl, required this.onPick});
+  const _AssetPickerField(
+      {required this.label, required this.assetUrl, required this.onPick});
 
   final String label;
   final String? assetUrl;
@@ -326,10 +322,13 @@ class _AssetPickerField extends StatelessWidget {
               border: Border.all(color: Colors.grey.shade400),
               borderRadius: BorderRadius.circular(4),
               image: assetUrl != null
-                  ? DecorationImage(image: NetworkImage(assetUrl!), fit: BoxFit.cover)
+                  ? DecorationImage(
+                      image: NetworkImage(assetUrl!), fit: BoxFit.cover)
                   : null,
             ),
-            child: assetUrl == null ? const Icon(Icons.image_outlined, color: Colors.grey) : null,
+            child: assetUrl == null
+                ? const Icon(Icons.image_outlined, color: Colors.grey)
+                : null,
           ),
           const SizedBox(width: 12),
           Text(label),

@@ -50,7 +50,17 @@
 	{#if data.gallery.length > 0}
 		<div class="mt-16 grid grid-cols-2 gap-2">
 			{#each data.gallery as { image, asset } (image.id)}
-				<img src={asset.secureUrl} alt={image.caption ?? ''} class="aspect-square object-cover" />
+				{#if asset.resourceType === 'video'}
+					<video
+						src={asset.secureUrl}
+						title={image.caption ?? ''}
+						controls
+						playsinline
+						class="aspect-square w-full object-cover"
+					></video>
+				{:else}
+					<img src={asset.secureUrl} alt={image.caption ?? ''} class="aspect-square object-cover" />
+				{/if}
 			{/each}
 		</div>
 	{/if}

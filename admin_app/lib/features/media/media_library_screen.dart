@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/db/models/media_asset.dart';
 import '../../core/providers.dart';
+import 'asset_thumbnail.dart';
 
 class MediaLibraryScreen extends ConsumerStatefulWidget {
   const MediaLibraryScreen({super.key});
@@ -15,19 +16,24 @@ class MediaLibraryScreen extends ConsumerStatefulWidget {
 class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
   bool _uploading = false;
 
-  Future<void> _upload() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _upload({required bool video}) async {
+    final picker = ImagePicker();
+    final picked = video
+        ? await picker.pickVideo(source: ImageSource.gallery)
+        : await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
 
     setState(() => _uploading = true);
     try {
-      final uploaded = await ref.read(cloudinaryServiceProvider).uploadImage(picked.path);
-      await ref
-          .read(repositoryProvider)
-          .insertMediaAsset(
+      final cloudinary = ref.read(cloudinaryServiceProvider);
+      final uploaded = video
+          ? await cloudinary.uploadVideo(picked.path)
+          : await cloudinary.uploadImage(picked.path);
+      await ref.read(repositoryProvider).insertMediaAsset(
             cloudinaryPublicId: uploaded.publicId,
             secureUrl: uploaded.secureUrl,
             format: uploaded.format,
+            resourceType: uploaded.resourceType,
             bytes: uploaded.bytes,
             width: uploaded.width,
             height: uploaded.height,
@@ -36,7 +42,8 @@ class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
       ref.invalidate(mediaAssetsProvider);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Upload failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -51,7 +58,9 @@ class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
         title: const Text('New collection'),
         content: TextField(controller: nameController, autofocus: true),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           FilledButton(
             onPressed: () => Navigator.pop(context, nameController.text.trim()),
             child: const Text('Create'),
@@ -61,7 +70,9 @@ class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
     );
     if (name == null || name.isEmpty) return;
     final slug = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
-    await ref.read(repositoryProvider).createMediaCollection(name: name, slug: slug);
+    await ref
+        .read(repositoryProvider)
+        .createMediaCollection(name: name, slug: slug);
     ref.invalidate(mediaCollectionsProvider);
   }
 
@@ -81,16 +92,26 @@ class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _uploading ? null : _upload,
-        backgroundColor: Colors.black,
-        child: _uploading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.add_photo_alternate_outlined),
+      floatingActionButton: PopupMenuButton<bool>(
+        enabled: !_uploading,
+        onSelected: (video) => _upload(video: video),
+        itemBuilder: (context) => const [
+          PopupMenuItem(value: false, child: Text('Upload photo')),
+          PopupMenuItem(value: true, child: Text('Upload video')),
+        ],
+        child: FloatingActionButton(
+          onPressed: null,
+          backgroundColor: Colors.black,
+          child: _uploading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.add_photo_alternate_outlined,
+                  color: Colors.white),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -125,7 +146,8 @@ class _MediaLibraryScreenState extends ConsumerState<MediaLibraryScreen> {
                   mainAxisSpacing: 8,
                 ),
                 itemCount: assets.length,
-                itemBuilder: (context, index) => _AssetCard(asset: assets[index]),
+                itemBuilder: (context, index) =>
+                    _AssetCard(asset: assets[index]),
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -149,7 +171,7 @@ class _AssetCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(asset.secureUrl, fit: BoxFit.cover),
+          AssetThumbnail(asset: asset),
           Positioned(
             left: 0,
             right: 0,
