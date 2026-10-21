@@ -4,6 +4,14 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	function hostname(url: string) {
+		try {
+			return new URL(url).hostname.replace(/^www\./, '');
+		} catch {
+			return 'live site';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -21,6 +29,30 @@
 			{#if data.project.subtitle}
 				<p class="mt-1 text-sm text-neutral-400">{data.project.subtitle}</p>
 			{/if}
+			{#if data.project.liveUrl || data.project.repoUrl}
+				<div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs">
+					{#if data.project.liveUrl}
+						<a
+							href={data.project.liveUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="underline underline-offset-4 hover:text-white"
+						>
+							Visit {hostname(data.project.liveUrl)} ↗
+						</a>
+					{/if}
+					{#if data.project.repoUrl}
+						<a
+							href={data.project.repoUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="underline underline-offset-4 hover:text-white"
+						>
+							Source ↗
+						</a>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -35,17 +67,6 @@
 	<div class="mt-10">
 		<Prose html={data.contentHtml} />
 	</div>
-
-	{#if data.project.repoUrl || data.project.liveUrl}
-		<div class="mt-8 flex gap-4 font-mono text-xs">
-			{#if data.project.repoUrl}
-				<a href={data.project.repoUrl} class="underline underline-offset-4">Repo</a>
-			{/if}
-			{#if data.project.liveUrl}
-				<a href={data.project.liveUrl} class="underline underline-offset-4">Live</a>
-			{/if}
-		</div>
-	{/if}
 
 	{#if data.gallery.length > 0}
 		<div class="mt-16 grid grid-cols-2 gap-2">
