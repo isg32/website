@@ -173,12 +173,16 @@ class Repository {
     await _setContentStatus(table: 'work_projects', id: id, status: status);
   }
 
+  /// Appends to the end of the gallery unless [sortOrder] is given.
   Future<void> addWorkGalleryImage(int workProjectId, int mediaAssetId,
-      {int sortOrder = 0}) async {
+      {int? sortOrder}) async {
     await _db.execute(
       '''
       INSERT INTO work_gallery_images (work_project_id, media_asset_id, sort_order)
-      VALUES (@workProjectId, @mediaAssetId, @sortOrder)
+      VALUES (@workProjectId, @mediaAssetId, COALESCE(@sortOrder::int, (
+        SELECT COALESCE(MAX(sort_order) + 1, 0) FROM work_gallery_images
+        WHERE work_project_id = @workProjectId
+      )))
       ''',
       {
         'workProjectId': workProjectId,
@@ -269,12 +273,16 @@ class Repository {
     await _setContentStatus(table: 'blog_posts', id: id, status: status);
   }
 
+  /// Appends to the end of the gallery unless [sortOrder] is given.
   Future<void> addBlogGalleryImage(int blogPostId, int mediaAssetId,
-      {int sortOrder = 0}) async {
+      {int? sortOrder}) async {
     await _db.execute(
       '''
       INSERT INTO blog_gallery_images (blog_post_id, media_asset_id, sort_order)
-      VALUES (@blogPostId, @mediaAssetId, @sortOrder)
+      VALUES (@blogPostId, @mediaAssetId, COALESCE(@sortOrder::int, (
+        SELECT COALESCE(MAX(sort_order) + 1, 0) FROM blog_gallery_images
+        WHERE blog_post_id = @blogPostId
+      )))
       ''',
       {
         'blogPostId': blogPostId,
